@@ -33,7 +33,7 @@ Segment new_segment(){
 //struct for ACK
 typedef struct{
   ////ACK//////
-  short seq_num;
+  short ack_num;
 }ACK;
 
 
@@ -92,7 +92,7 @@ int main(void) {
 
       bytes_recd = recvfrom(sock_server, &filename, STRING_SIZE, 0,
                      (struct sockaddr *) &client_addr, &client_addr_len);
-      printf("Received filename is: %s",filename);
+      printf("Received filename is: %s\n",filename);
 
       /* prepare the message to send */
 
@@ -119,8 +119,10 @@ int main(void) {
           	s.seq_num = htons(seq_num);
           	s.count = htons((short)strlen(line));
           	s.data = line;
+            printf("sizeof(s) = %lu\n",sizeof(s));
 
-          	bytes_sent = sendto(sock_server,&s,1024,0,(struct sockaddr*) &client_addr, client_addr_len));
+
+          	bytes_sent = sendto(sock_server,&s,16,0,(struct sockaddr*) &client_addr, client_addr_len);
 
          	 //wait for ack
           	while(1){     
@@ -130,7 +132,7 @@ int main(void) {
             	setsockopt(sock_server, SOL_SOCKET,SO_RCVTIMEO, (const void*)&timeout,sizeof(timeout));
             	bytes_recd = recvfrom(sock_server,&a,sizeof(a),0,(struct sockaddr *)0,(int*)0);
             	if(bytes_recd <= 0) {
-              		bytes_sent = sendto(sock_server,&s,1024,0,(struct sockaddr*) &client_addr, client_addr_len));
+              		bytes_sent = sendto(sock_server,&s,1024,0,(struct sockaddr*) &client_addr, client_addr_len);
               		continue;
 				}
         		if(ntohs(a.ack_num) != seq_num){
@@ -152,7 +154,9 @@ int main(void) {
     
     		Segment EOT;
     		EOT.count = 0;
-    		bytes_sent = sendto(sock_server,&EOT,1024,0,(struct sockaddr*) &client_addr, client_addr_len));
+    		bytes_sent = sendto(sock_server,&EOT,1024,0,(struct sockaddr*) &client_addr, client_addr_len);
     		break;
    		}
-	}	
+      }   
+	}
+}	

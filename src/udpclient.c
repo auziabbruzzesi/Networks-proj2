@@ -9,11 +9,13 @@
 #include <sys/socket.h>     /* for socket, sendto, and recvfrom */
 #include <netinet/in.h>     /* for sockaddr_in */
 #include <unistd.h>         /* for close */
-
+#include <math.h>
 #define STRING_SIZE 1024
 
 #define SERV_UDP_PORT 45678
 
+float PacketLossRate = 0;
+float ACKLossRate = 0;
 //struct for ACK
 typedef struct{
   ////ACK//////
@@ -28,6 +30,26 @@ typedef struct{
   ///DATA///////
   char * data;
 }Segment;
+
+   int SimulateLoss() {
+		int num = 0;
+		if (num<PacketLossRate) {
+		// Packet dropped
+			return 1; 
+		}
+		// Packet not dropped
+		return 0; 
+	}
+	
+	int SimulateACKLoss(){
+		int num = 0;
+		if (num<ACKLossRate) {
+		// ACK dropped
+			return 1;
+		}
+		// ACK not dropped
+		return 0; 
+	}   
 
 int main(void) {
 
@@ -111,6 +133,7 @@ int main(void) {
 //    scanf("%hu", &server_port);
 
    /* Clear server address structure and initialize with server address */
+   printf("here\n");
    memset(&server_addr, 0, sizeof(server_addr));
    server_addr.sin_family = AF_INET;
    memcpy((char *)&server_addr.sin_addr, server_hp->h_addr,
@@ -118,20 +141,37 @@ int main(void) {
    server_addr.sin_port = htons(server_port);
 
    /* user interface */
-   
-   FILE * file;
-   file = fopen("out.txt","wb");
+   printf("Please input a filename:\n");
+   scanf("%s", filename);
+   msg_len = strlen(filename) + 1;
+
+   /* send message */
+  
+   bytes_sent = sendto(sock_client, filename, msg_len, 0,
+            (struct sockaddr *) &server_addr, sizeof (server_addr));
+
    
     Segment s;
     ACK a; 
+    
+    s.data = (char*)malloc(STRING_SIZE);
         
 	size_t message_bytes = 1;
 	int data_bytes = 0;			//initialize data_bytes
 	short expectedSeqNum = 0;
-          
+    short seq;
+
+
+    printf("opening file\n");
+    FILE * file;
+    file = fopen("out.txt","wb");
+    printf("entering rcv loop\n");
    while(message_bytes) { 
+        printf("before rcv\n");
 		bytes_recd = recvfrom(sock_client, &s, 1024, 0, (struct sockaddr *) 0, (int *) 0); //receive the header
-   		printf("line: %s",line);
+        printf("after rcv\n");
+        printf("line: %s\n",s.data);
+//printf("line: %s",line);
    		char * message = (char*)malloc((80)*sizeof(char)); //initialize the message... we know this will be at most 80 chars
 		seq = ntohs(s.seq_num); // pull the sequence number out of the header
 		data_bytes = ntohs(s.count); 	//pull the number of bytes received out of the header
@@ -168,34 +208,9 @@ int main(void) {
 
    
    
-   int SimulateLoss() {
-		int num = Math.floor(Math.random() * Math.floor(1));
-		if (num<PacketLossRate) {
-		// Packet dropped
-			return 1; 
-		}
-		// Packet not dropped
-		return 0; 
-	}
-	
-	int SimulateACLKLoss(){
-		int num = Math.floor(Math.random() * Math.floor(1));
-		if (num<ACKLossRate) {
-		// ACK dropped
-			return 1;
-		}
-		// ACK not dropped
-		return 0; 
-	}    
+ 
 
-   printf("Please input a filename:\n");
-   scanf("%s", filename);
-   msg_len = strlen(filename) + 1;
 
-   /* send message */
-  
-   bytes_sent = sendto(sock_client, filename, msg_len, 0,
-            (struct sockaddr *) &server_addr, sizeof (server_addr));
 
    /* get response from server */
   
