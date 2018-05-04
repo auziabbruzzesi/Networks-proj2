@@ -19,10 +19,11 @@
 #define SERV_UDP_PORT 45678
 //struct for segment
 typedef struct{
+  ////HEADER//////
   short seq_num;
   short count;
-  
-
+  ///DATA///////
+  char * data;
 }Segment;
 
 Segment new_segment(){
