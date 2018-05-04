@@ -28,7 +28,7 @@ typedef struct{
   short seq_num;
   short count;
   ///DATA///////
-  char * data;
+  char data[STRING_SIZE];
 }Segment;
 
    int SimulateLoss() {
@@ -154,7 +154,7 @@ int main(void) {
     Segment s;
     ACK a; 
     
-    s.data = (char*)malloc(STRING_SIZE);
+    //s.data = (char*)malloc(STRING_SIZE);
         
 	size_t message_bytes = 1;
 	int data_bytes = 0;			//initialize data_bytes
@@ -167,16 +167,20 @@ int main(void) {
     file = fopen("out.txt","wb");
     printf("entering rcv loop\n");
    while(message_bytes) { 
-        printf("before rcv\n");
-		bytes_recd = recvfrom(sock_client, &s, 1024, 0, (struct sockaddr *) 0, (int *) 0); //receive the header
-        printf("after rcv\n");
-        printf("line: %s\n",s.data);
-//printf("line: %s",line);
-   		char * message = (char*)malloc((80)*sizeof(char)); //initialize the message... we know this will be at most 80 chars
+       // printf("before rcv\n");
+		bytes_recd = recvfrom(sock_client, &s, sizeof(s), 0,(struct sockaddr *) 0, (int *) 0);
+        //printf("after rcv\n");
+       // printf("line: %s\n",s.data);
+       //printf("line: %s",line);
+
+   		//char * message = (char*)malloc((80)*sizeof(char)); //initialize the message... we know this will be at most 80 chars
+        
 		seq = ntohs(s.seq_num); // pull the sequence number out of the header
 		data_bytes = ntohs(s.count); 	//pull the number of bytes received out of the header
-		message = (s.data);
-		
+		char* message = (s.data);
+        printf("string: %s\n", message);
+        printf("sequence number %d\n",s.seq_num);
+        printf("count: %d \n",s.count);
   		if (s.count==0) {
    			break;
    		}
@@ -185,11 +189,12 @@ int main(void) {
    			continue;
    		}
    		
-   		message_bytes = s.count; 	//will pop out of the loop if this is 0
+   		//message_bytes = s.count; 	//will pop out of the loop if this is 0
 		
 		int ACK_Loss = SimulateACKLoss();
 		
 		if (s.seq_num==expectedSeqNum) {
+            printf("sequence number is good\n");
 			fprintf(file, "%s",message); 	//put the line in the out.txt file
 			a.seq_num = htons(expectedSeqNum);
 			
@@ -198,6 +203,7 @@ int main(void) {
 			}
 		}
 		else {
+            printf("sequence number not good\n");
 			a.seq_num = htons(1 - expectedSeqNum);
 			if (!ACK_Loss) { 
 				bytes_sent = sendto(sock_client, &a, sizeof(a), 0, (struct sockaddr *) &server_addr, sizeof (server_addr));

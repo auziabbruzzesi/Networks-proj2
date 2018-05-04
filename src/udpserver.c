@@ -23,7 +23,7 @@ typedef struct{
   short seq_num;
   short count;
   ///DATA///////
-  char * data;
+  char data[STRING_SIZE];
 }Segment;
 
 Segment new_segment(){
@@ -88,7 +88,7 @@ int main(void) {
 
    client_addr_len = sizeof (client_addr);
 
-   for (;;) {
+  
 
       bytes_recd = recvfrom(sock_server, &filename, STRING_SIZE, 0,
                      (struct sockaddr *) &client_addr, &client_addr_len);
@@ -118,11 +118,12 @@ int main(void) {
           	//TODO: construct a segment here
           	s.seq_num = htons(seq_num);
           	s.count = htons((short)strlen(line));
-          	s.data = line;
+          	strcpy(s.data,line);
+            printf("\n");
             printf("sizeof(s) = %lu\n",sizeof(s));
 
 
-          	bytes_sent = sendto(sock_server,&s ,16,0,(struct sockaddr*) &client_addr, client_addr_len);
+          	bytes_sent = sendto(sock_server,&s ,sizeof(s),0,(struct sockaddr*) &client_addr, client_addr_len);
 
          	 //wait for ack
           	while(1){     
@@ -152,11 +153,12 @@ int main(void) {
     //   bytes_sent = sendto(sock_server, modifiedfilename, msg_len, 0,
     //            (struct sockaddr*) &client_addr, client_addr_len);
     
-    		Segment EOT;
+    		
+    	
+   		}
+       Segment EOT;
     		EOT.count = 0;
     		bytes_sent = sendto(sock_server,&EOT,1024,0,(struct sockaddr*) &client_addr, client_addr_len);
-    		break;
-   		}
       }   
-	}
+	
 }	

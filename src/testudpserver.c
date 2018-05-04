@@ -16,7 +16,14 @@
    incoming messages from clients. You should change this to a different
    number to prevent conflicts with others in the class. */
 
-#define SERV_UDP_PORT 65100
+#define SERV_UDP_PORT 45678
+typedef struct{
+  ////HEADER//////
+  short seq_num;
+  short count;
+  ///DATA///////
+  char data[STRING_SIZE];
+}Segment;
 
 int main(void) {
 
@@ -83,8 +90,14 @@ int main(void) {
          modifiedSentence[i] = toupper (sentence[i]);
 
       /* send message */
+      Segment s;
+      s.seq_num = 0;
+      s.count = 5;
+      strcpy(s.data,"This is a test");
  
-      bytes_sent = sendto(sock_server, modifiedSentence, msg_len, 0,
+      bytes_sent = sendto(sock_server, &s, sizeof(s), 0,
                (struct sockaddr*) &client_addr, client_addr_len);
+
+    printf("bytes sent: %d", bytes_sent);
    }
 }

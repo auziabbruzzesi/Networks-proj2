@@ -11,6 +11,13 @@
 #include <unistd.h>         /* for close */
 
 #define STRING_SIZE 1024
+typedef struct{
+  ////HEADER//////
+  short seq_num;
+  short count;
+  ///DATA///////
+  char data[STRING_SIZE];
+}Segment;
 
 int main(void) {
 
@@ -79,8 +86,7 @@ int main(void) {
 
    /* initialize server address information */
 
-   printf("Enter hostname of server: ");
-   scanf("%s", server_hostname);
+   strcpy(server_hostname,"localhost" );
    if ((server_hp = gethostbyname(server_hostname)) == NULL) {
       perror("Client: invalid server hostname\n");
       close(sock_client);
@@ -110,8 +116,13 @@ int main(void) {
    /* get response from server */
   
    printf("Waiting for response from server...\n");
-   bytes_recd = recvfrom(sock_client, modifiedSentence, STRING_SIZE, 0,
-                (struct sockaddr *) 0, (int *) 0);
+   Segment s;
+   
+
+   bytes_recd = recvfrom(sock_client, &s, sizeof(s), 0,(struct sockaddr *) 0, (int *) 0);
+
+   printf("string: %s", s.data);
+            
    printf("\nThe response from server is:\n");
    printf("%s\n\n", modifiedSentence);
 
