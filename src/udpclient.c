@@ -27,8 +27,8 @@ int main(void) {
    char server_hostname[STRING_SIZE]; /* Server's hostname */
    unsigned short server_port;  /* Port number used by server (remote port) */
 
-   char sentence[STRING_SIZE];  /* send message */
-   char modifiedSentence[STRING_SIZE]; /* receive message */
+   char filename[STRING_SIZE];  /* send message */
+   char modifiedfilename[STRING_SIZE]; /* receive message */
    unsigned int msg_len;  /* length of message */
    int bytes_sent, bytes_recd; /* number of bytes sent or received */
   
@@ -100,22 +100,22 @@ int main(void) {
 
    /* user interface */
 
-   printf("Please input a sentence:\n");
-   scanf("%s", sentence);
-   msg_len = strlen(sentence) + 1;
+   printf("Please input a filename:\n");
+   scanf("%s", filename);
+   msg_len = strlen(filename) + 1;
 
    /* send message */
   
-   bytes_sent = sendto(sock_client, sentence, msg_len, 0,
+   bytes_sent = sendto(sock_client, filename, msg_len, 0,
             (struct sockaddr *) &server_addr, sizeof (server_addr));
 
    /* get response from server */
   
    printf("Waiting for response from server...\n");
-   bytes_recd = recvfrom(sock_client, modifiedSentence, STRING_SIZE, 0,
+   bytes_recd = recvfrom(sock_client, modifiedfilename, STRING_SIZE, 0,
                 (struct sockaddr *) 0, (int *) 0);
    printf("\nThe response from server is:\n");
-   printf("%s\n\n", modifiedSentence);
+   printf("%s\n\n", modifiedfilename);
 
    /* close the socket */
 
