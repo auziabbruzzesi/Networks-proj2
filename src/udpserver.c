@@ -21,7 +21,7 @@
 typedef struct{
   short seq_num;
   short count;
-  char * data;
+  char data[STRING_SIZE];
 
 }Segment;
 
