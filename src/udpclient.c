@@ -49,7 +49,7 @@ int main(void) {
 
    /* initialize client address information */
 
-   client_port = 0;   /* This allows choice of any available local port */
+   client_port = 45678;   /* This allows choice of any available local port */
 
    /* Uncomment the lines below if you want to specify a particular 
              local port: */
