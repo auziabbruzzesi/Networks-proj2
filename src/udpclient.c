@@ -65,7 +65,7 @@ int main(void) {
                                         any host interface, if more than one 
                                         are present */
    client_addr.sin_port = htons(client_port);
-
+//
    /* bind the socket to the local client port */
 
    if (bind(sock_client, (struct sockaddr *) &client_addr,
