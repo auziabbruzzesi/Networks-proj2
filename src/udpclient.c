@@ -111,11 +111,11 @@ int main(void) {
 
    /* get response from server */
   
-   printf("Waiting for response from server...\n");
-   bytes_recd = recvfrom(sock_client, modifiedfilename, STRING_SIZE, 0,
-                (struct sockaddr *) 0, (int *) 0);
-   printf("\nThe response from server is:\n");
-   printf("%s\n\n", modifiedfilename);
+//    printf("Waiting for response from server...\n");
+//    bytes_recd = recvfrom(sock_client, modifiedfilename, STRING_SIZE, 0,
+//                 (struct sockaddr *) 0, (int *) 0);
+//    printf("\nThe response from server is:\n");
+//    printf("%s\n\n", modifiedfilename);
 
    /* close the socket */
 
