@@ -30,8 +30,8 @@ int main(void) {
                                         stores client address */
    unsigned int client_addr_len;  /* Length of client address structure */
 
-   char sentence[STRING_SIZE];  /* receive message */
-   char modifiedSentence[STRING_SIZE]; /* send message */
+   char filename[STRING_SIZE];  /* receive message */
+   char modifiedfilename[STRING_SIZE]; /* send message */
    unsigned int msg_len;  /* length of message */
    int bytes_sent, bytes_recd; /* number of bytes sent or received */
    unsigned int i;  /* temporary loop variable */
@@ -71,20 +71,24 @@ int main(void) {
 
    for (;;) {
 
-      bytes_recd = recvfrom(sock_server, &sentence, STRING_SIZE, 0,
+      bytes_recd = recvfrom(sock_server, &filename, STRING_SIZE, 0,
                      (struct sockaddr *) &client_addr, &client_addr_len);
-      printf("Received Sentence is: %s\n     with length %d\n\n",
-                         sentence, bytes_recd);
+      printf("Received filename is: %s\n     with length %d\n\n",
+                         filename, bytes_recd);
 
       /* prepare the message to send */
 
       msg_len = bytes_recd;
-      for (i=0; i<msg_len; i++)
-         modifiedSentence[i] = toupper (sentence[i]);
+      FILE* file;                //initialize the file
+      file = fopen(filename,"r");
+      filename?printf("file exists!\n"):printf("file not found, try again\n");
+    //   for (i=0; i<msg_len; i++)
+    //      modifiedfilename[i] = toupper (filename[i]);
 
-      /* send message */
+    //   /* send message */
  
-      bytes_sent = sendto(sock_server, modifiedSentence, msg_len, 0,
-               (struct sockaddr*) &client_addr, client_addr_len);
+    //   bytes_sent = sendto(sock_server, modifiedfilename, msg_len, 0,
+    //            (struct sockaddr*) &client_addr, client_addr_len);
+    break;
    }
 }
