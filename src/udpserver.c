@@ -96,13 +96,21 @@ int main(void) {
       file = fopen(filename,"r");
       filename?printf("file exists!\n"):printf("file not found, try again\n");
       Segment s = new_segment();
+      char * line = (char*)malloc(80*sizeof(char));
+      size_t buffer = STRING_SIZE;
       printf("dflt size of a segment %lu\n",sizeof(s));
 
-      for(;;){
-        for(;;){
-          
+      if(file){
+        
+        //get line loop
+        while(getline(&line,&buffer,file)>0){
+
+          printf("l:\n",);
+
+
         }
       }
+
     //   for (i=0; i<msg_len; i++)
     //      modifiedfilename[i] = toupper (filename[i]);
 
