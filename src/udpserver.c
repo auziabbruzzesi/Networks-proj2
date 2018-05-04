@@ -105,7 +105,7 @@ int main(void) {
         //get line loop
         while(getline(&line,&buffer,file)>0){
 
-          printf("l:\n",);
+          printf("l:\n");
 
 
         }
