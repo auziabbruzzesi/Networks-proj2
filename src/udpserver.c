@@ -17,6 +17,19 @@
    number to prevent conflicts with others in the class. */
 
 #define SERV_UDP_PORT 45678
+//struct for segment
+typedef struct{
+  short seq_num;
+  short count;
+  char * data;
+
+}Segment;
+
+Segment new_segment(){
+  Segment s;
+  return s;
+}
+
 
 int main(void) {
 
@@ -73,8 +86,7 @@ int main(void) {
 
       bytes_recd = recvfrom(sock_server, &filename, STRING_SIZE, 0,
                      (struct sockaddr *) &client_addr, &client_addr_len);
-      printf("Received filename is: %s\n     with length %d\n\n",
-                         filename, bytes_recd);
+      printf("Received filename is: %s",filename);
 
       /* prepare the message to send */
 
@@ -82,6 +94,8 @@ int main(void) {
       FILE* file;                //initialize the file
       file = fopen(filename,"r");
       filename?printf("file exists!\n"):printf("file not found, try again\n");
+      Segment s = new_segment();
+      printf("dflt size of a segment %f\n",sizeof(s) );
     //   for (i=0; i<msg_len; i++)
     //      modifiedfilename[i] = toupper (filename[i]);
 
