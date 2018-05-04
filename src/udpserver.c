@@ -30,6 +30,11 @@ Segment new_segment(){
   Segment s;
   return s;
 }
+//struct for ACK
+typedef struct{
+  ////ACK//////
+  short seq_num;
+}ACK;
 
 
 int main(void) {
@@ -94,53 +99,49 @@ int main(void) {
       msg_len = bytes_recd;
       FILE* file;                //initialize the file
       file = fopen(filename,"r");
-      filename?printf("file exists!\n"):printf("file not found, try again\n");
       
       char * line = (char*)malloc(80*sizeof(char));
       size_t buffer = STRING_SIZE;
-      
-
-
-
+    	
       //if the file is valid
       if(file){
         //initialize the sequence number to 0
         short seq_num = 0;
         
+        // initialize segment
+         Segment s;
+    	 ACK a;
         //while there is an available line to send
-        while(getline(&line,&buffer,file)>0){
-          printf("line: %s",line);
+        	while(getline(&line,&buffer,file)>0){
+          	printf("line: %s",line);
 
-          //TODO: construct a segment here
-          Segment s;
+          	//TODO: construct a segment here
+          	s.seq_num = htons(seq_num);
+          	s.count = htons((short)strlen(line));
+          	s.data = line;
 
-          s.seq_num = htons(seq_num);
-          s.count = htons((short)strlen(line));
-          s.data = line;
+          	bytes_sent = sendto(sock_server,&s,1024,0,(struct sockaddr*) &client_addr, client_addr_len));
 
-          bytes_sent = send(sock_server,&s,sizeof(s),0);
-
-          //wait for ack
-          while(1){
-          //   struct timeval timeout;
-          //   timeout.tv_sec = 10;
-          //   timeout.tv_usec = 0;
-          //   setsockopt(sock_client, SOL_SOCKET, SO_RCVTIMEO, 
-          //   (const void *) &timeout, sizeof(timeout));
-          //   bytes_recd = recvfrom(sock_client, modifiedfilename, 
-          //   STRING_SIZE, 0, (struct sockaddr *) 0, (int *) 0);
-          //   if (bytes_recd <=0)
-          //     // Timeout
-          //   else
-          //     // Packet received
-          // }
-
-          seq_num = 1 - seq_num;
-
-        }
-      }
+         	 //wait for ack
+          	while(1){     
+            	struct timeval timeout;
+            	timeout.tv_sec = 10;
+            	timeout.tv_usec = 0;
+            	setsockopt(sock_server, SOL_SOCKET,SO_RCVTIMEO, (const void*)&timeout,sizeof(timeout));
+            	bytes_recd = recvfrom(sock_server,&a,sizeof(a),0,(struct sockaddr *)0,(int*)0);
+            	if(bytes_recd <= 0) {
+              		bytes_sent = sendto(sock_server,&s,1024,0,(struct sockaddr*) &client_addr, client_addr_len));
+              		continue;
+				}
+        		if(ntohs(a.ack_num) != seq_num){
+                	continue;
+            	}
+            	else{
+            		seq_num = 1 - seq_num;
+                	break;
+            	}
+         	}
       
-
     //   for (i=0; i<msg_len; i++)
     //      modifiedfilename[i] = toupper (filename[i]);
 
@@ -148,7 +149,10 @@ int main(void) {
  
     //   bytes_sent = sendto(sock_server, modifiedfilename, msg_len, 0,
     //            (struct sockaddr*) &client_addr, client_addr_len);
-    break;
-   }
-}
-}
+    
+    		Segment EOT;
+    		EOT.count = 0;
+    		bytes_sent = sendto(sock_server,&EOT,1024,0,(struct sockaddr*) &client_addr, client_addr_len));
+    		break;
+   		}
+	}	

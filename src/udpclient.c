@@ -12,6 +12,23 @@
 
 #define STRING_SIZE 1024
 
+#define SERV_UDP_PORT 45678
+
+//struct for ACK
+typedef struct{
+  ////ACK//////
+  short seq_num;
+}ACK;
+
+// Struct for segment
+typedef struct{
+  ////HEADER//////
+  short seq_num;
+  short count;
+  ///DATA///////
+  char * data;
+}Segment;
+
 int main(void) {
 
    int sock_client;  /* Socket used by client */ 
@@ -31,7 +48,9 @@ int main(void) {
    char modifiedfilename[STRING_SIZE]; /* receive message */
    unsigned int msg_len;  /* length of message */
    int bytes_sent, bytes_recd; /* number of bytes sent or received */
-  
+  	int ACKLossRate = 0;
+  	int PacketLossRate = 0;
+  	
    /* open a socket */
 
    if ((sock_client = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
@@ -99,6 +118,75 @@ int main(void) {
    server_addr.sin_port = htons(server_port);
 
    /* user interface */
+   
+   FILE * file;
+   file = fopen("out.txt","wb");
+   
+    Segment s;
+    ACK a; 
+        
+	size_t message_bytes = 1;
+	int data_bytes = 0;			//initialize data_bytes
+	short expectedSeqNum = 0;
+          
+   while(message_bytes) { 
+		bytes_recd = recvfrom(sock_client, &s, 1024, 0, (struct sockaddr *) 0, (int *) 0); //receive the header
+   		printf("line: %s",line);
+   		char * message = (char*)malloc((80)*sizeof(char)); //initialize the message... we know this will be at most 80 chars
+		seq = ntohs(s.seq_num); // pull the sequence number out of the header
+		data_bytes = ntohs(s.count); 	//pull the number of bytes received out of the header
+		message = (s.data);
+		
+  		if (s.count==0) {
+   			break;
+   		}
+   		int pktrecv = SimulateLoss();
+   		if(pktrecv==1) {
+   			continue;
+   		}
+   		
+   		message_bytes = s.count; 	//will pop out of the loop if this is 0
+		
+		int ACK_Loss = SimulateACKLoss();
+		
+		if (s.seq_num==expectedSeqNum) {
+			fprintf(file, "%s",message); 	//put the line in the out.txt file
+			a.seq_num = htons(expectedSeqNum);
+			
+			if (!ACK_Loss) { 
+				bytes_sent = sendto(sock_client, &a, sizeof(a), 0, (struct sockaddr *) &server_addr, sizeof (server_addr));
+			}
+		}
+		else {
+			a.seq_num = htons(1 - expectedSeqNum);
+			if (!ACK_Loss) { 
+				bytes_sent = sendto(sock_client, &a, sizeof(a), 0, (struct sockaddr *) &server_addr, sizeof (server_addr));
+			}
+		}
+		expectedSeqNum = 1 - expectedSeqNum;
+	}
+
+   
+   
+   int SimulateLoss() {
+		int num = Math.floor(Math.random() * Math.floor(1));
+		if (num<PacketLossRate) {
+		// Packet dropped
+			return 1; 
+		}
+		// Packet not dropped
+		return 0; 
+	}
+	
+	int SimulateACLKLoss(){
+		int num = Math.floor(Math.random() * Math.floor(1));
+		if (num<ACKLossRate) {
+		// ACK dropped
+			return 1;
+		}
+		// ACK not dropped
+		return 0; 
+	}    
 
    printf("Please input a filename:\n");
    scanf("%s", filename);
