@@ -95,7 +95,7 @@ int main(void) {
       printf("Received filename is: %s\n",filename);
 
       /* prepare the message to send */
-
+      //
       msg_len = bytes_recd;
       FILE* file;                //initialize the file
       file = fopen(filename,"r");
@@ -122,7 +122,7 @@ int main(void) {
             printf("sizeof(s) = %lu\n",sizeof(s));
 
 
-          	bytes_sent = sendto(sock_server,&s,16,0,(struct sockaddr*) &client_addr, client_addr_len);
+          	bytes_sent = sendto(sock_server,&s ,16,0,(struct sockaddr*) &client_addr, client_addr_len);
 
          	 //wait for ack
           	while(1){     
