@@ -95,21 +95,51 @@ int main(void) {
       FILE* file;                //initialize the file
       file = fopen(filename,"r");
       filename?printf("file exists!\n"):printf("file not found, try again\n");
-      Segment s = new_segment();
+      
       char * line = (char*)malloc(80*sizeof(char));
       size_t buffer = STRING_SIZE;
-      printf("dflt size of a segment %lu\n",sizeof(s));
+      
 
+
+
+      //if the file is valid
       if(file){
+        //initialize the sequence number to 0
+        short seq_num = 0;
         
-        //get line loop
+        //while there is an available line to send
         while(getline(&line,&buffer,file)>0){
+          printf("line: %s",line);
 
-          printf("l: %s\n",line);
+          //TODO: construct a segment here
+          Segment s;
 
+          s.seq_num = htons(seq_num);
+          s.count = htons((short)strlen(line));
+          s.data = line;
+
+          bytes_sent = send(sock_server,&s,sizeof(s),0);
+
+          //wait for ack
+          while(1){
+          //   struct timeval timeout;
+          //   timeout.tv_sec = 10;
+          //   timeout.tv_usec = 0;
+          //   setsockopt(sock_client, SOL_SOCKET, SO_RCVTIMEO, 
+          //   (const void *) &timeout, sizeof(timeout));
+          //   bytes_recd = recvfrom(sock_client, modifiedfilename, 
+          //   STRING_SIZE, 0, (struct sockaddr *) 0, (int *) 0);
+          //   if (bytes_recd <=0)
+          //     // Timeout
+          //   else
+          //     // Packet received
+          // }
+
+          seq_num = 1 - seq_num;
 
         }
       }
+      
 
     //   for (i=0; i<msg_len; i++)
     //      modifiedfilename[i] = toupper (filename[i]);
@@ -120,4 +150,5 @@ int main(void) {
     //            (struct sockaddr*) &client_addr, client_addr_len);
     break;
    }
+}
 }
