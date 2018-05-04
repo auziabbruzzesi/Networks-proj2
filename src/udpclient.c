@@ -79,15 +79,17 @@ int main(void) {
 
    /* initialize server address information */
 
-   printf("Enter hostname of server: ");
-   scanf("%s", server_hostname);
+//    printf("Enter hostname of server: ");
+//    scanf("%s", server_hostname);
+   strcpy(server_hostname,"localhost" );
    if ((server_hp = gethostbyname(server_hostname)) == NULL) {
       perror("Client: invalid server hostname\n");
       close(sock_client);
       exit(1);
    }
-   printf("Enter port number for server: ");
-   scanf("%hu", &server_port);
+   server_port = 45678;
+//    printf("Enter port number for server: ");
+//    scanf("%hu", &server_port);
 
    /* Clear server address structure and initialize with server address */
    memset(&server_addr, 0, sizeof(server_addr));
