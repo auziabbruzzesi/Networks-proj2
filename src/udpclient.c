@@ -120,8 +120,6 @@ int main(void) {
 
    /* initialize server address information */
 
-//    printf("Enter hostname of server: ");
-//    scanf("%s", server_hostname);
    strcpy(server_hostname,"localhost" );
    if ((server_hp = gethostbyname(server_hostname)) == NULL) {
       perror("Client: invalid server hostname\n");
@@ -129,8 +127,7 @@ int main(void) {
       exit(1);
    }
    server_port = 45678;
-//    printf("Enter port number for server: ");
-//    scanf("%hu", &server_port);
+
 
    /* Clear server address structure and initialize with server address */
    printf("here\n");
@@ -151,10 +148,10 @@ int main(void) {
             (struct sockaddr *) &server_addr, sizeof (server_addr));
 
    
-    Segment s;
-    ACK a; 
+    Segment s; //to receive message into
+    ACK a; //to send to the server
     
-    //s.data = (char*)malloc(STRING_SIZE);
+    
         
 	size_t message_bytes = 1;
 	int data_bytes = 0;			//initialize data_bytes
@@ -176,19 +173,23 @@ int main(void) {
    		//char * message = (char*)malloc((80)*sizeof(char)); //initialize the message... we know this will be at most 80 chars
         
 		seq = ntohs(s.seq_num); // pull the sequence number out of the header
-		data_bytes = ntohs(s.count); 	//pull the number of bytes received out of the header
 		char* message = (s.data);
+        printf("--------------------------------------\n");
         printf("string: %s\n", message);
-        printf("sequence number %d\n",s.seq_num);
+        printf("sequence number of incoming packet %d\n",ntohs(s.seq_num));
+        printf("expected seqnum %d \n",expectedSeqNum);
         printf("count: %d \n",s.count);
+
   		if (s.count==0) {
+            printf("received EOT packet\n");
    			break;
    		}
    		int pktrecv = SimulateLoss();
-   		if(pktrecv==1) {
+   		if(0) {
+            
    			continue;
    		}
-           //comment
+    
    		
    		//message_bytes = s.count; 	//will pop out of the loop if this is 0
 		
@@ -200,6 +201,8 @@ int main(void) {
 			a.seq_num = htons(expectedSeqNum);
 			
 			if (!ACK_Loss) { 
+                printf("sending ack\n");
+                printf("ack_num = %d\n",a.seq_num);
 				bytes_sent = sendto(sock_client, &a, sizeof(a), 0, (struct sockaddr *) &server_addr, sizeof (server_addr));
 			}
 		}
@@ -210,6 +213,7 @@ int main(void) {
 				bytes_sent = sendto(sock_client, &a, sizeof(a), 0, (struct sockaddr *) &server_addr, sizeof (server_addr));
 			}
 		}
+        printf("switching expectedseqnum\n");
 		expectedSeqNum = 1 - expectedSeqNum;
 	}
 

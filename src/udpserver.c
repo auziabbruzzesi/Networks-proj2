@@ -26,10 +26,6 @@ typedef struct{
   char data[STRING_SIZE];
 }Segment;
 
-Segment new_segment(){
-  Segment s;
-  return s;
-}
 //struct for ACK
 typedef struct{
   ////ACK//////
@@ -89,76 +85,73 @@ int main(void) {
    client_addr_len = sizeof (client_addr);
 
   
-
-      bytes_recd = recvfrom(sock_server, &filename, STRING_SIZE, 0,
-                     (struct sockaddr *) &client_addr, &client_addr_len);
-      printf("Received filename is: %s\n",filename);
-
-      /* prepare the message to send */
-      //
-      msg_len = bytes_recd;
-      FILE* file;                //initialize the file
-      file = fopen(filename,"r");
-      
-      char * line = (char*)malloc(80*sizeof(char));
-      size_t buffer = STRING_SIZE;
-    	
-      //if the file is valid
-      if(file){
-        //initialize the sequence number to 0
-        short seq_num = 0;
-        
-        // initialize segment
-         Segment s;
-    	 ACK a;
-        //while there is an available line to send
-        	while(getline(&line,&buffer,file)>0){
-          	printf("line: %s",line);
-
-          	//TODO: construct a segment here
-          	s.seq_num = htons(seq_num);
-          	s.count = htons((short)strlen(line));
-          	strcpy(s.data,line);
-            printf("\n");
-            printf("sizeof(s) = %lu\n",sizeof(s));
+  /* open file */
+    bytes_recd = recvfrom(sock_server, &filename, STRING_SIZE, 0,
+                    (struct sockaddr *) &client_addr, &client_addr_len);
+    printf("Received filename is: %s\n",filename);
 
 
-          	bytes_sent = sendto(sock_server,&s ,sizeof(s),0,(struct sockaddr*) &client_addr, client_addr_len);
-
-         	 //wait for ack
-          	while(1){     
-            	struct timeval timeout;
-            	timeout.tv_sec = 10;
-            	timeout.tv_usec = 0;
-            	setsockopt(sock_server, SOL_SOCKET,SO_RCVTIMEO, (const void*)&timeout,sizeof(timeout));
-            	bytes_recd = recvfrom(sock_server,&a,sizeof(a),0,(struct sockaddr *)0,(int*)0);
-            	if(bytes_recd <= 0) {
-              		bytes_sent = sendto(sock_server,&s,1024,0,(struct sockaddr*) &client_addr, client_addr_len);
-              		continue;
-				}
-        		if(ntohs(a.ack_num) != seq_num){
-                	continue;
-            	}
-            	else{
-            		seq_num = 1 - seq_num;
-                	break;
-            	}
-         	}
-      
-    //   for (i=0; i<msg_len; i++)
-    //      modifiedfilename[i] = toupper (filename[i]);
-
-    //   /* send message */
- 
-    //   bytes_sent = sendto(sock_server, modifiedfilename, msg_len, 0,
-    //            (struct sockaddr*) &client_addr, client_addr_len);
     
-    		
-    	
-   		}
-       Segment EOT;
-    		EOT.count = 0;
-    		bytes_sent = sendto(sock_server,&EOT,1024,0,(struct sockaddr*) &client_addr, client_addr_len);
+    msg_len = bytes_recd;
+    FILE* file;                //initialize the file
+    file = fopen(filename,"r");
+    
+    char * line = (char*)malloc(80*sizeof(char));
+    size_t buffer = STRING_SIZE;
+    
+    
+    if(file){
+/*Enter the FSM*/
+      short seq_num = 0;           
+      Segment s;
+      ACK a;
+
+/*Enter outer loop*/
+
+      while(getline(&line,&buffer,file)>=0){
+        
+        s.count = htons((short)strlen(line));
+        strcpy(s.data,line);
+        s.seq_num = seq_num;
+        printf("---------------------------\n");
+        printf("string: %s\n",line);
+        printf("sequence number of outgoing packet %d\n",s.seq_num);
+        printf("count %d\n",s.count);
+        
+        /*SEND SEGMENT*/
+        bytes_sent = sendto(sock_server,&s ,sizeof(s),0,
+          (struct sockaddr*) &client_addr, client_addr_len);
+
+        /*Enter inner loop: wait for Ack*/
+
+        while(1){     
+          struct timeval timeout;
+          timeout.tv_sec = 10;
+          timeout.tv_usec = 0;
+          setsockopt(sock_server, SOL_SOCKET,SO_RCVTIMEO, (const void*)&timeout,sizeof(timeout));
+          bytes_recd = recvfrom(sock_server,&a,sizeof(a),0,(struct sockaddr *)0,(int*)0);
+          
+          if(bytes_recd <= 0) {                     
+            printf("timeout.. retransmitting packet\n");
+            bytes_sent = sendto(sock_server,&s,1024,0,(struct sockaddr*) &client_addr, client_addr_len);
+            continue;
+          }
+          printf("ack recvd\n");
+          printf("expected ack number %d\n",seq_num);
+          printf("actual incoming ack number %d\n",ntohs(a.ack_num));
+          if(ntohs(a.ack_num) != seq_num){
+            continue;                     //null action
+          }else{
+            printf("changing seq_num\n");
+            seq_num = 1 - seq_num;
+            break;
+          }
+        }
+      }
+        Segment EOT;
+        EOT.count = 0;
+        EOT.seq_num = seq_num;
+        bytes_sent = sendto(sock_server,&EOT,1024,0,(struct sockaddr*) &client_addr, client_addr_len);
       }   
 	
 }	
