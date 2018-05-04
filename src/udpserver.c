@@ -16,7 +16,7 @@
    incoming messages from clients. You should change this to a different
    number to prevent conflicts with others in the class. */
 
-#define SERV_UDP_PORT 45678
+#define SERV_UDP_PORT 65100
 
 int main(void) {
 
