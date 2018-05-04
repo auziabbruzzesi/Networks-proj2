@@ -96,7 +96,13 @@ int main(void) {
       file = fopen(filename,"r");
       filename?printf("file exists!\n"):printf("file not found, try again\n");
       Segment s = new_segment();
-      printf("dflt size of a segment %lu\n",sizeof(s) );
+      printf("dflt size of a segment %lu\n",sizeof(s));
+
+      for(;;){
+        for(;;){
+          
+        }
+      }
     //   for (i=0; i<msg_len; i++)
     //      modifiedfilename[i] = toupper (filename[i]);
 
