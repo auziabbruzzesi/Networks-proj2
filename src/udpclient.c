@@ -17,6 +17,12 @@
 
 int num_packet_rcvs = 0;
 int num_byte_delv = 0;
+int num_dup_packets = 0;
+int num_packets_dropped = 0;
+int tot_packets_rcv = 0;
+int num_ack_trans = 0;
+int num_ack_dropped = 0;
+int tot_ack = 0;
 
 float PacketLossRate = 0;
 float ACKLossRate = 0;
@@ -193,15 +199,16 @@ int main(int argc, char** argv){
 
     
     packetloss = SimulateLoss();
+    tot_packets_rcv += 1;
 
     if(packetloss){
+      num_packets_dropped += 1;
       continue;
-      //packets dropped due to loss
+      
     }else{
       if(ntohs(s.seq_num) != expectedSeqNum){
         a.seq_num = htons(1 - expectedSeqNum);
-        //number of repeats without loss
-        
+        num_dup_packets += 1;        
       }else{
         a.seq_num = htons(expectedSeqNum);
         fprintf(file, "%s",s.data);
@@ -210,10 +217,14 @@ int main(int argc, char** argv){
       }
 
       ackloss = SimulateACKLoss();
+      printf("ackloss = %d \n", ackloss);
+      tot_ack += 1;
 
       if(!ackloss){
         bytes_sent = sendto(sock_client, &a, sizeof(a), 0, (struct sockaddr *)&server_addr, sizeof(server_addr));
+        num_ack_trans += 1;
       }else{
+        num_ack_dropped += 1;
         continue;
       }
     }
@@ -223,10 +234,13 @@ int main(int argc, char** argv){
    
   }
   close(sock_client);
-  printf("number of data packets successfully received:        %d\n", num_packet_rcvs);	
-  printf("number of bytes delivered:                         %d\n", num_byte_delv);
-  // printf("number of packets retransmitted:           %d\n", num_retrans);	
-  // printf("number of packets transmitted (total):     %d\n", num_packet_trans);
-  // printf("number of ACKs received:                   %d\n", num_acks);
-  // printf("number of timeouts                         %d\n", num_timeout);
+  printf("number of data packets successfully received:              %d\n", num_packet_rcvs);	
+  printf("number of bytes delivered:                                 %d\n", num_byte_delv);
+  printf("number of duplicate packets received (w/o loss):           %d\n", num_dup_packets);	
+  printf("number of packets dropped due to loss:                     %d\n", num_packets_dropped);
+  printf("total packets received:                                    %d\n", tot_packets_rcv);
+  printf("number of ACKs transmitted                                 %d\n", num_ack_trans);
+  printf("number of ACKs dropped                                     %d\n", num_ack_dropped);
+  printf("total number of ACKs                                       %d\n", tot_ack);
+
 }
