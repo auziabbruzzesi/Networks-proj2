@@ -15,8 +15,13 @@
 
 #define SERV_UDP_PORT 45678
 
+int num_packet_rcvs = 0;
+int num_byte_delv = 0;
+
 float PacketLossRate = 0;
 float ACKLossRate = 0;
+
+
 //struct for ACK
 typedef struct{
   ////ACK//////
@@ -191,12 +196,17 @@ int main(int argc, char** argv){
 
     if(packetloss){
       continue;
+      //packets dropped due to loss
     }else{
       if(ntohs(s.seq_num) != expectedSeqNum){
         a.seq_num = htons(1 - expectedSeqNum);
+        //number of repeats without loss
         
       }else{
         a.seq_num = htons(expectedSeqNum);
+        fprintf(file, "%s",s.data);
+        num_packet_rcvs += 1;
+        num_byte_delv += ntohs(s.count);
       }
 
       ackloss = SimulateACKLoss();
@@ -213,4 +223,10 @@ int main(int argc, char** argv){
    
   }
   close(sock_client);
+  printf("number of data packets successfully received:        %d\n", num_packet_rcvs);	
+  printf("number of bytes delivered:                         %d\n", num_byte_delv);
+  // printf("number of packets retransmitted:           %d\n", num_retrans);	
+  // printf("number of packets transmitted (total):     %d\n", num_packet_trans);
+  // printf("number of ACKs received:                   %d\n", num_acks);
+  // printf("number of timeouts                         %d\n", num_timeout);
 }
