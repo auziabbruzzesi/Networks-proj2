@@ -172,6 +172,7 @@ int main(int argc, char** argv) {
         printf("expected ack number %d\n",seq_num);
         printf("actual incoming ack number %d\n",ntohs(a.ack_num));
         if(ntohs(a.ack_num) != seq_num){
+          printf("HERE\n");
           continue;                     //null action
         }else{
           // printf("changing seq_num\n");
