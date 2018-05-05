@@ -130,9 +130,7 @@ int main(int argc, char** argv) {
   /*Enter outer loop*/
     while(getline(&line,&buffer,file)>=0){
       s.count = htons((short)strlen(line));
-      num_byte_trans += s.count;
-      printf("count: %d\n",ntohs(s.count));
-      printf("strlen: %lu \n",strlen(line));
+      num_byte_trans += ntohs(s.count);
       
 
        
@@ -140,7 +138,7 @@ int main(int argc, char** argv) {
       strcpy(s.data,line);
       s.seq_num = htons(seq_num);
       // printf("---------------------------\n");
-       printf("string: %s\n",line);
+       
       // printf("sequence number of outgoing packet %d\n",s.seq_num);
       
       
@@ -148,6 +146,7 @@ int main(int argc, char** argv) {
       bytes_sent = sendto(sock_server,&s ,sizeof(s),0,
         (struct sockaddr*) &client_addr, client_addr_len);
         num_data_trans += 1;
+        num_packet_trans+=1;
 
       /*Enter inner loop: wait for Ack*/
 
@@ -161,8 +160,12 @@ int main(int argc, char** argv) {
         if(bytes_recd <= 0) {         //timeout
           // printf("timeout.. retransmitting packet\n");
           bytes_sent = sendto(sock_server,&s,1024,0,(struct sockaddr*) &client_addr, client_addr_len);
+          num_retrans += 1;
+          num_packet_trans +=1;
+          num_timeout+=1;
           continue;
         }
+        num_acks+=1;
         // printf("ack recvd\n");
         // printf("expected ack number %d\n",seq_num);
         // printf("actual incoming ack number %d\n",ntohs(a.ack_num));
@@ -184,7 +187,6 @@ int main(int argc, char** argv) {
   printf("number of bytes transmitted:               %d\n", num_byte_trans);
   printf("number of packets retransmitted:           %d\n", num_retrans);	
   printf("number of packets transmitted (total):     %d\n", num_packet_trans);
-  printf("number of packets retransmitted:           %d\n", num_retrans);
   printf("number of ACKs received:                   %d\n", num_acks);
   printf("number of timeouts                         %d\n", num_timeout);
 	
