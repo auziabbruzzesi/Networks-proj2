@@ -59,8 +59,8 @@ int main(int argc, char** argv){
     printf("defaulting to parameters 0 0\n");
   }else{
 
-  PacketLossRate = atoi(argv[1]);
-  ACKLossRate = atoi(argv[2]);
+  PacketLossRate = atof(argv[1]);
+  ACKLossRate = atof(arg[2]);
   }
 
 
