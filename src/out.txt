@@ -1,3 +1,0 @@
-hi, this is a test file.
-this is line two
-and this is line three

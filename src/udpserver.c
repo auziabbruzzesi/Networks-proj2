@@ -12,6 +12,17 @@
 
 #define STRING_SIZE 1024
 
+int num_data_trans = 0;
+int num_byte_trans = 0;
+int num_retrans = 0;
+int num_packet_trans=0;
+int num_acks = 0;
+int num_timeout = 0;
+
+
+
+int timeout = 5;
+
 /* SERV_UDP_PORT is the port number on which the server listens for
    incoming messages from clients. You should change this to a different
    number to prevent conflicts with others in the class. */
@@ -33,7 +44,16 @@ typedef struct{
 }ACK;
 
 
-int main(void) {
+int main(int argc, char** argv) {
+
+  if(argc != 2){
+    printf("Usage: udpserver <Timout n (10^n microseconds)> ");
+    printf("defaulting to n = 5");
+  }else{
+    timeout = atoi(argv[1]);
+  }
+
+
 
 
   int sock_server;  /* Socket on which server listens to clients */
@@ -80,8 +100,8 @@ int main(void) {
 
   /* wait for incoming messages in an indefinite loop */
 
-  printf("Waiting for incoming messages on port %hu\n\n", 
-                          server_port);
+  // printf("Waiting for incoming messages on port %hu\n\n", 
+                          //server_port);
 
   client_addr_len = sizeof (client_addr);
 
@@ -89,7 +109,7 @@ int main(void) {
 /* open file */
   bytes_recd = recvfrom(sock_server, &filename, STRING_SIZE, 0,
                   (struct sockaddr *) &client_addr, &client_addr_len);
-  printf("Received filename is: %s\n",filename);
+  // printf("Received filename is: %s\n",filename);
 
 
   
@@ -110,16 +130,24 @@ int main(void) {
   /*Enter outer loop*/
     while(getline(&line,&buffer,file)>=0){
       s.count = htons((short)strlen(line));
-      strcpy(s.data,line);
-      s.seq_num = seq_num;
-      printf("---------------------------\n");
-      printf("string: %s\n",line);
-      printf("sequence number of outgoing packet %d\n",s.seq_num);
-      printf("count %d\n",s.count);
+      num_byte_trans += s.count;
+      printf("count: %d\n",ntohs(s.count));
+      printf("strlen: %lu \n",strlen(line));
       
-      /*SEND SEGMENT*/
+
+       
+
+      strcpy(s.data,line);
+      s.seq_num = htons(seq_num);
+      // printf("---------------------------\n");
+       printf("string: %s\n",line);
+      // printf("sequence number of outgoing packet %d\n",s.seq_num);
+      
+      
+  /*SEND SEGMENT*/
       bytes_sent = sendto(sock_server,&s ,sizeof(s),0,
         (struct sockaddr*) &client_addr, client_addr_len);
+        num_data_trans += 1;
 
       /*Enter inner loop: wait for Ack*/
 
@@ -131,17 +159,17 @@ int main(void) {
         bytes_recd = recvfrom(sock_server,&a,sizeof(a),0,(struct sockaddr *)0,(int*)0);
         
         if(bytes_recd <= 0) {         //timeout
-          printf("timeout.. retransmitting packet\n");
+          // printf("timeout.. retransmitting packet\n");
           bytes_sent = sendto(sock_server,&s,1024,0,(struct sockaddr*) &client_addr, client_addr_len);
           continue;
         }
-        printf("ack recvd\n");
-        printf("expected ack number %d\n",seq_num);
-        printf("actual incoming ack number %d\n",ntohs(a.ack_num));
+        // printf("ack recvd\n");
+        // printf("expected ack number %d\n",seq_num);
+        // printf("actual incoming ack number %d\n",ntohs(a.ack_num));
         if(ntohs(a.ack_num) != seq_num){
           continue;                     //null action
         }else{
-          printf("changing seq_num\n");
+          // printf("changing seq_num\n");
           seq_num = 1 - seq_num;
           break;
         }
@@ -152,5 +180,15 @@ int main(void) {
       EOT.seq_num = seq_num;
       bytes_sent = sendto(sock_server,&EOT,1024,0,(struct sockaddr*) &client_addr, client_addr_len);
   }   
+  printf("number of data packets transmitted:        %d\n", num_data_trans);	
+  printf("number of bytes transmitted:               %d\n", num_byte_trans);
+  printf("number of packets retransmitted:           %d\n", num_retrans);	
+  printf("number of packets transmitted (total):     %d\n", num_packet_trans);
+  printf("number of packets retransmitted:           %d\n", num_retrans);
+  printf("number of ACKs received:                   %d\n", num_acks);
+  printf("number of timeouts                         %d\n", num_timeout);
 	
-}	
+}
+
+
+

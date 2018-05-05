@@ -9,7 +9,7 @@
 #include <sys/socket.h> /* for socket, sendto, and recvfrom */
 #include <netinet/in.h> /* for sockaddr_in */
 #include <unistd.h>     /* for close */
-#include <math.h>
+#include<time.h>        /* for time */
 #define STRING_SIZE 1024
 
 #define SERV_UDP_PORT 45678
@@ -31,7 +31,39 @@ typedef struct{
   char data[STRING_SIZE];
 } Segment;
 
-int main(void){
+
+int SimulateLoss(){
+  srand((unsigned)time(NULL));
+  float x = (((long double)rand()+1)/((long double)RAND_MAX+1));
+  if(x < PacketLossRate){
+    return 1;
+  }else{
+    return 0;
+  }
+}
+
+int SimulateACKLoss(){
+  srand((unsigned)time(NULL));
+  float x = (((long double)rand()+1)/((long double)RAND_MAX+1));
+  if(x < ACKLossRate){
+    return 1;
+  }else{
+    return 0;
+  }
+
+}
+int main(int argc, char** argv){
+
+  if(argc != 3){
+    printf("Usage: udpclient <Packet Loss Rate (0<=n<=1)> <ACK Loss Rate (0<=n<=1)>\n");
+    printf("defaulting to parameters 0 0\n");
+  }else{
+
+  PacketLossRate = atoi(argv[1]);
+  ACKLossRate = atoi(argv[2]);
+  }
+
+
 
   int sock_client; /* Socket used by client */
 
@@ -72,13 +104,7 @@ int main(void){
 
   client_port = 0; /* This allows choice of any available local port */
 
-  /* Uncomment the lines below if you want to specify a particular 
-             local port: */
-  /*
-   printf("Enter port number for client: ");
-   scanf("%hu", &client_port);
-   */
-
+  
   /* clear client address structure and initialize with client address */
   memset(&client_addr, 0, sizeof(client_addr));
   client_addr.sin_family = AF_INET;
@@ -108,7 +134,6 @@ int main(void){
   server_port = 45678;
 
   /* Clear server address structure and initialize with server address */
-  printf("here\n");
   memset(&server_addr, 0, sizeof(server_addr));
   server_addr.sin_family = AF_INET;
   memcpy((char *)&server_addr.sin_addr, server_hp->h_addr,
@@ -117,7 +142,7 @@ int main(void){
 
   /* user interface */
 
-  printf("Please input a filename:\n");
+  // printf("Please input a filename:\n");
   scanf("%s", filename);
   msg_len = strlen(filename) + 1;
 
@@ -129,16 +154,16 @@ int main(void){
 
   Segment s; 
   ACK a;     
-
-  
   int data_bytes = 0; //initialize data_bytes
   short expectedSeqNum = 0;
   short seq;
+  int packetloss;
+  int ackloss;
 
-  printf("opening file\n");
+  
   FILE *file;
   file = fopen("out.txt", "wb");
-  printf("entering rcv loop\n");
+  
   while (1){
     // printf("before rcv\n");
     bytes_recd = recvfrom(sock_client, &s, sizeof(s), 0, (struct sockaddr *)0, (int *)0);
@@ -149,43 +174,42 @@ int main(void){
     //char * message = (char*)malloc((80)*sizeof(char)); //initialize the message... we know this will be at most 80 chars
 
     seq = ntohs(s.seq_num); // pull the sequence number out of the header
-    char *message = (s.data);
-    printf("--------------------------------------\n");
-    printf("string: %s\n", message);
-    printf("sequence number of incoming packet %d\n", ntohs(s.seq_num));
-    printf("expected seqnum %d \n", expectedSeqNum);
-    printf("count: %d \n", s.count);
-
-    if (s.count == 0){
-      printf("received EOT packet\n");
+    if (ntohs(s.count) == 0){
+      // printf("received EOT packet\n");
       break;
     }
-    
-    
+    char *message = (s.data);
+    // printf("--------------------------------------\n");
+    // printf("string: %s\n", message);
+    // printf("sequence number of incoming packet %d\n", ntohs(s.seq_num));
+    // printf("expected seqnum %d \n", expectedSeqNum);
+    // printf("count: %d \n", ntohs(s.count));
 
     
+    packetloss = SimulateLoss();
 
-   
-
-    if (s.seq_num == expectedSeqNum){
-      printf("sequence number is good\n");
-      fprintf(file, "%s", message); //put the line in the out.txt file
-      a.seq_num = htons(expectedSeqNum);
-
-      if (!ACK_Loss){
-        printf("sending ack\n");
-        printf("ack_num = %d\n", a.seq_num);
-        bytes_sent = sendto(sock_client, &a, sizeof(a), 0, (struct sockaddr *)&server_addr, sizeof(server_addr));
-      }
+    if(packetloss){
+      continue;
     }else{
-      printf("sequence number not good\n");
-      a.seq_num = htons(1 - expectedSeqNum);
-      if (!ACK_Loss){
+      if(ntohs(s.seq_num) != expectedSeqNum){
+        a.seq_num = htons(1 - expectedSeqNum);
+        
+      }else{
+        a.seq_num = htons(expectedSeqNum);
+      }
+
+      ackloss = SimulateACKLoss();
+
+      if(!ackloss){
         bytes_sent = sendto(sock_client, &a, sizeof(a), 0, (struct sockaddr *)&server_addr, sizeof(server_addr));
+      }else{
+        continue;
       }
     }
-    printf("switching expectedseqnum\n");
     expectedSeqNum = 1 - expectedSeqNum;
+
+
+   
   }
   close(sock_client);
 }
