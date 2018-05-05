@@ -60,7 +60,7 @@ int main(int argc, char** argv){
   }else{
 
   PacketLossRate = atof(argv[1]);
-  ACKLossRate = atof(arg[2]);
+  ACKLossRate = atof(argv[2]);
   }
 
 
