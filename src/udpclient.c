@@ -211,7 +211,9 @@ int main(int argc, char** argv){
         num_dup_packets += 1;        
       }else{
         a.seq_num = htons(expectedSeqNum);
-        fprintf(file, "%s",s.data);
+        expectedSeqNum = 1-expectedSeqNum;
+        fprintf(file, "%s",message);
+        printf("wrote line\n");
         num_packet_rcvs += 1;
         num_byte_delv += ntohs(s.count);
       }
@@ -227,8 +229,9 @@ int main(int argc, char** argv){
         num_ack_dropped += 1;
         continue;
       }
+      
     }
-    expectedSeqNum = 1 - expectedSeqNum;
+    
 
 
    
