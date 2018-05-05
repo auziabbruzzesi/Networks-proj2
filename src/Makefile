@@ -1,5 +1,5 @@
 CC = /usr/bin/gcc
-all: git udpclient udpserver
+all: udpclient udpserver
 test: testclient testserver
 git:
 	git pull

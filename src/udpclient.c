@@ -10,6 +10,7 @@
 #include <netinet/in.h> /* for sockaddr_in */
 #include <unistd.h>     /* for close */
 #include<time.h>        /* for time */
+#include<math.h>
 #define STRING_SIZE 1024
 
 #define SERV_UDP_PORT 45678
@@ -175,15 +176,15 @@ int main(int argc, char** argv){
 
     seq = ntohs(s.seq_num); // pull the sequence number out of the header
     if (ntohs(s.count) == 0){
-      // printf("received EOT packet\n");
+       printf("received EOT packet\n");
       break;
     }
     char *message = (s.data);
-    // printf("--------------------------------------\n");
-    // printf("string: %s\n", message);
-    // printf("sequence number of incoming packet %d\n", ntohs(s.seq_num));
-    // printf("expected seqnum %d \n", expectedSeqNum);
-    // printf("count: %d \n", ntohs(s.count));
+    printf("--------------------------------------\n");
+    printf("string: %s\n", message);
+    printf("sequence number of incoming packet %d\n", ntohs(s.seq_num));
+    printf("expected seqnum %d \n", expectedSeqNum);
+    printf("count: %d \n", ntohs(s.count));
 
     
     packetloss = SimulateLoss();

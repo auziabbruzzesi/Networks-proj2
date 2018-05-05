@@ -9,6 +9,8 @@
 #include <sys/socket.h>     /* for socket, sendto, and recvfrom */
 #include <netinet/in.h>     /* for sockaddr_in */
 #include <unistd.h>         /* for close */
+#include<math.h>
+
 
 #define STRING_SIZE 1024
 
@@ -21,7 +23,7 @@ int num_timeout = 0;
 
 
 
-int timeout = 5;
+int timeout_val = 5;
 
 /* SERV_UDP_PORT is the port number on which the server listens for
    incoming messages from clients. You should change this to a different
@@ -50,7 +52,7 @@ int main(int argc, char** argv) {
     printf("Usage: udpserver <Timout n (10^n microseconds)> ");
     printf("defaulting to n = 5");
   }else{
-    timeout = atoi(argv[1]);
+    timeout_val = atoi(argv[1]);
   }
 
 
@@ -137,9 +139,9 @@ int main(int argc, char** argv) {
 
       strcpy(s.data,line);
       s.seq_num = htons(seq_num);
-      // printf("---------------------------\n");
+       printf("---------------------------\n");
        
-      // printf("sequence number of outgoing packet %d\n",s.seq_num);
+       printf("sequence number of outgoing packet %d\n",s.seq_num);
       
       
   /*SEND SEGMENT*/
@@ -152,13 +154,13 @@ int main(int argc, char** argv) {
 
       while(1){     
         struct timeval timeout;
-        timeout.tv_sec = 10;
-        timeout.tv_usec = 0;
+        timeout.tv_sec = 0;
+        timeout.tv_usec = pow(10,timeout_val);
         setsockopt(sock_server, SOL_SOCKET,SO_RCVTIMEO, (const void*)&timeout,sizeof(timeout));
         bytes_recd = recvfrom(sock_server,&a,sizeof(a),0,(struct sockaddr *)0,(int*)0);
         
         if(bytes_recd <= 0) {         //timeout
-          // printf("timeout.. retransmitting packet\n");
+        printf("timeout.. retransmitting packet\n");
           bytes_sent = sendto(sock_server,&s,1024,0,(struct sockaddr*) &client_addr, client_addr_len);
           num_retrans += 1;
           num_packet_trans +=1;
@@ -166,9 +168,9 @@ int main(int argc, char** argv) {
           continue;
         }
         num_acks+=1;
-        // printf("ack recvd\n");
-        // printf("expected ack number %d\n",seq_num);
-        // printf("actual incoming ack number %d\n",ntohs(a.ack_num));
+        printf("ack recvd\n");
+        printf("expected ack number %d\n",seq_num);
+        printf("actual incoming ack number %d\n",ntohs(a.ack_num));
         if(ntohs(a.ack_num) != seq_num){
           continue;                     //null action
         }else{
