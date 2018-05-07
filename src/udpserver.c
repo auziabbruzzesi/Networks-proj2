@@ -139,9 +139,9 @@ int main(int argc, char** argv) {
 
       strcpy(s.data,line);
       s.seq_num = htons(seq_num);
-       printf("---------------------------\n");
+      //  printf("---------------------------\n");
        
-       printf("sequence number of outgoing packet %d\n",s.seq_num);
+      //  printf("sequence number of outgoing packet %d\n",s.seq_num);
       
       
   /*SEND SEGMENT*/
@@ -160,7 +160,6 @@ int main(int argc, char** argv) {
         bytes_recd = recvfrom(sock_server,&a,sizeof(a),0,(struct sockaddr *)0,(int*)0);
         
         if(bytes_recd <= 0) {         //timeout
-        printf("timeout.. retransmitting packet\n");
           bytes_sent = sendto(sock_server,&s,1024,0,(struct sockaddr*) &client_addr, client_addr_len);
           num_retrans += 1;
           num_packet_trans +=1;
@@ -168,11 +167,10 @@ int main(int argc, char** argv) {
           continue;
         }
         num_acks+=1;
-        printf("ack recvd\n");
-        printf("expected ack number %d\n",seq_num);
-        printf("actual incoming ack number %d\n",ntohs(a.ack_num));
+        // printf("ack recvd\n");
+        // printf("expected ack number %d\n",seq_num);
+        // printf("actual incoming ack number %d\n",ntohs(a.ack_num));
         if(ntohs(a.ack_num) != seq_num){
-          printf("HERE\n");
           continue;                     //null action
         }else{
           // printf("changing seq_num\n");

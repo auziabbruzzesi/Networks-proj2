@@ -188,7 +188,6 @@ int main(int argc, char** argv){
 
     seq = ntohs(s.seq_num); // pull the sequence number out of the header
     if (ntohs(s.count) == 0){
-       printf("received EOT packet\n");
       break;
     }
     char *message = (s.data);
@@ -214,13 +213,12 @@ int main(int argc, char** argv){
         a.seq_num = htons(expectedSeqNum);
         expectedSeqNum = 1-expectedSeqNum;
         fprintf(file, "%s",message);
-        printf("wrote line\n");
         num_packet_rcvs += 1;
         num_byte_delv += ntohs(s.count);
       }
 
       ackloss = SimulateACKLoss();
-      printf("ackloss = %d \n", ackloss);
+      // printf("ackloss = %d \n", ackloss);
       tot_ack += 1;
 
       if(!ackloss){
