@@ -1,0 +1,94 @@
+Script started on Mon 07 May 2018 09:22:29 AM EDT
+austinta@cisc450:~/Networks-proj2/src$ ls -l
+total 18
+-rw-rw-r-- 1 austinta austinta  136 May  4 09:50 desktop.ini
+-rw-rw-r-- 1 austinta austinta  263 May  7 09:14 Makefile
+-rw-rw-r-- 1 austinta austinta    0 May  7 09:22 server_script.txt
+-rw-r--r-- 1 austinta austinta 1159 May  7 09:05 test1.txt
+-rw-rw-r-- 1 austinta austinta 2510 May  7 09:05 test2.txt
+-rw-rw-r-- 1 austinta austinta 7473 May  7 09:14 udpclient.c
+-rw-rw-r-- 1 austinta austinta 5870 May  7 09:14 udpserver.c
+austinta@cisc450:~/Networks-proj2/src$ make all
+/usr/bin/gcc udpclient.c -o udpclient
+/usr/bin/gcc  udpserver.c -o udpserver -lm
+austinta@cisc450:~/Networks-proj2/src$ ls 0[K-l
+total 19
+-rw-rw-r-- 1 austinta austinta   136 May  4 09:50 desktop.ini
+-rw-rw-r-- 1 austinta austinta   263 May  7 09:14 Makefile
+-rw-rw-r-- 1 austinta austinta     0 May  7 09:22 server_script.txt
+-rw-r--r-- 1 austinta austinta  1159 May  7 09:05 test1.txt
+-rw-rw-r-- 1 austinta austinta  2510 May  7 09:05 test2.txt
+-rwxrwxr-x 1 austinta austinta 14324 May  7 09:22 udpclient
+-rw-rw-r-- 1 austinta austinta  7473 May  7 09:14 udpclient.c
+-rwxrwxr-x 1 austinta austinta 13970 May  7 09:22 udpserver
+-rw-rw-r-- 1 austinta austinta  5870 May  7 09:14 udpserver.c
+austinta@cisc450:~/Networks-proj2/src$ cat tst[K[Kest2.txt
+In this project, you will implement a client and a server
+which use TCP to transmit a file from the server to the client.
+Both the client and the server will run on the course VM
+{\em cisc450.cis.udel.edu},
+but they should be written in such a way that they could
+conceivably be run on any two hosts, not necessarily the same.
+For convenience, both the hostname and the server
+port number may be hardcoded into both client and server,
+but this should be done in such a way that they should
+be easy to change.
+
+The server starts by waiting for a connection request from the client. %printin
+
+The client starts by prompting the user to enter 
+%the hostname and port number for the server. 
+%It then prompts the user to enter
+the name of the file to be transferred. The client then sends a connection
+request to the server.  After the connection is established, the client sends a
+filename to the server. The server reads the file and sends it to the client in
+a series of packets as described below. The client receives the file and stores
+it with the name {\em out.txt}.
+When the file transfer is complete, both the client 
+A
+B
+C
+DEF
+
+G
+H
+and the server terminate execution.
+
+The format of a data packet is shown in the figure below:
+
+\begin{verbatim}
+    <----------------- 16 bits (2 bytes) ------------------>
+    --------------------------------------------------------
+    |                Packet Sequence Number                |
+    --------------------------------------------------------
+    |              Count (no. of data bytes)               |
+    --------------------------------------------------------
+    |            Data Bytes      |          ...            |
+    --------------------------------------------------------
+\end{verbatim}
+
+Each data packet contains a 4-byte long header followed by a number of data
+characters.  The header contains  2 fields, each of length 16 bits (2 bytes) as
+shown in the figure above. You must convert the values in these fields
+into the network byte order when they are transmitted, and convert them back to
+convert them back to host byte order when they are received.
+
+
+The first field of the header is called the packet sequence number. Each packet
+transmitted  by the  server is  assigned a sequence number  starting with 1 and
+incremented by 1 for each packet.  The second field of the header is a count of
+data characters in the packet. This value must be in the range 0 through 80. If
+the count is 0, then there are no data
+characters in the packet.
+austinta@cisc450:~/Networks-proj2/src$ ./udpserver 5
+number of data packets transmitted:        57
+number of bytes transmitted:               2510
+number of packets retransmitted:           0
+number of packets transmitted (total):     57
+number of ACKs received:                   57
+number of timeouts                         0
+austinta@cisc450:~/Networks-proj2/src$ diff test2.txt out.txt
+austinta@cisc450:~/Networks-proj2/src$ exit
+exit
+
+Script done on Mon 07 May 2018 09:24:37 AM EDT
