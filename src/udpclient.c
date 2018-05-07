@@ -15,6 +15,7 @@
 
 #define SERV_UDP_PORT 45678
 
+
 int num_packet_rcvs = 0;
 int num_byte_delv = 0;
 int num_dup_packets = 0;
@@ -45,7 +46,7 @@ typedef struct{
 
 
 int SimulateLoss(){
-  srand((unsigned)time(NULL));
+  
   float x = (((long double)rand()+1)/((long double)RAND_MAX+1));
   if(x < PacketLossRate){
     return 1;
@@ -55,7 +56,7 @@ int SimulateLoss(){
 }
 
 int SimulateACKLoss(){
-  srand((unsigned)time(NULL));
+  // srand((unsigned)time(NULL));
   float x = (((long double)rand()+1)/((long double)RAND_MAX+1));
   if(x < ACKLossRate){
     return 1;
@@ -65,6 +66,8 @@ int SimulateACKLoss(){
 
 }
 int main(int argc, char** argv){
+  srand((unsigned)time(NULL));
+
 
   if(argc != 3){
     printf("Usage: udpclient <Packet Loss Rate (0<=n<=1)> <ACK Loss Rate (0<=n<=1)>\n");
