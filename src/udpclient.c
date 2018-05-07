@@ -46,7 +46,6 @@ typedef struct{
 
 
 int SimulateLoss(){
-  
   float x = (((long double)rand()+1)/((long double)RAND_MAX+1));
   if(x < PacketLossRate){
     return 1;
@@ -56,7 +55,6 @@ int SimulateLoss(){
 }
 
 int SimulateACKLoss(){
-  // srand((unsigned)time(NULL));
   float x = (((long double)rand()+1)/((long double)RAND_MAX+1));
   if(x < ACKLossRate){
     return 1;
